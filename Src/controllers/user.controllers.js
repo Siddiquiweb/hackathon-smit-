@@ -30,26 +30,22 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Create user function
+
 export const createUser = async (req, res) => {
   const { name, email, password, isAdmin } = req.body;
 
-  // Validate required fields
   if (!name || !email || !password) {
     return res.status(400).json({ message: "All fields are required" });
   }
 
   try {
-    // Check if the user already exists
     const existingUser = await userModels.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash the password
     const hashPassword = await bcrypt.hash(password, 10);
 
-    // Create new user
     const user = await userModels.create({
       name,
       email,
@@ -57,7 +53,6 @@ export const createUser = async (req, res) => {
       isAdmin,
     });
 
-    // Send email (dummy email setup)
     const info = await transporter.sendMail({
       from: '"Kyle Glover 👻" <kyle.glover85@ethereal.email>', 
       to: email, // send to the user's email
@@ -79,7 +74,6 @@ export const createUser = async (req, res) => {
   }
 };
 
-// Login user function
 export const logInUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -105,7 +99,6 @@ export const logInUser = async (req, res) => {
     const accessToken = generateAccessToken(user);
     const refreshToken = generateRefreshToken(user);
 
-    // Set refresh token as a cookie
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -134,11 +127,9 @@ export const refreshToken = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    // Generate new tokens
     const accessToken = generateAccessToken(user);
     const newRefreshToken = generateRefreshToken(user);
 
-    // Update refresh token cookie
     res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -167,7 +158,6 @@ export const logoutUser = async (req, res) => {
 };
 
 
-// Get all users function
 export const getAllUsers = async (req, res) => {
   try {
     const users = await userModels.find();
